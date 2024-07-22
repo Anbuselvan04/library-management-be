@@ -4,12 +4,12 @@ const bookModel = require('../models/bookModel')
 
 const getAllBookData = async(request, response) => { 
     try {
-        let books = await bookModel.find();
+        let books = await bookModel.find({availability:"Available"});
 
         if(books.length === 0){
             console.log(`first`)
             const initialBooks = await bookModel.create(bookData)
-            books = await bookModel.find()
+            books = await bookModel.find({availability:"Available"})
         }
         return response.status(200).json(books)
 
@@ -25,6 +25,7 @@ const addNewBookData = async(request, response) => {
         if(!existingBook){
             const addBook = await bookModel.create(newBookData)
             return response.status(201).json({message: `New Book Added`})
+            
         }
         return response.status(409).json({message: `Book with ISBN ${newBookData.isbn} already exists!`})
     } catch (error) {
@@ -43,11 +44,10 @@ const editBookData = async(request, response) => {
 }
 
 const deleteBookData = async(request, response) => {
-    const bookToBeDeleted = request.body
-    console.log(bookToBeDeleted)
+    const isbn = request.params.isbn
     try{
-        const deletedBookData = await bookModel.findOneAndUpdate({isbn: bookToBeDeleted.isbn}, {availability: "NA"},{new : true})
-        return response.status(201).json(bookToBeDeleted)
+        const deletedBookData = await bookModel.findOneAndUpdate({isbn:isbn}, {availability: "NA"})
+        return response.status(201).json(deletedBookData)
     }   
     catch(error){
         return response.status(500).json({message:error.message})
